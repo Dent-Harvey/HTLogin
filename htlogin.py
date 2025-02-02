@@ -343,8 +343,8 @@ def main():
     parser.add_argument("-v", "--verbose", choices=['on', 'off'], default='off', help="Enable/disable verbose output (on/off)")
     parser.add_argument("-lang", "--language", default='en', help="Language code for keyword detection (default: en)")
     parser.add_argument("-o", "--output", nargs='?', const='output.txt', help="Save output to file")
-    parser.add_argument("--proxy", help="Proxy to use for requests (e.g., http://127.0.0.1:8080)")
-    parser.add_argument("--http-method", choices=['GET', 'POST'], default='POST', help="HTTP method to use for testing (default: POST)")
+    parser.add_argument("-p", "--proxy", help="Proxy to use for requests (e.g., http://127.0.0.1:8080)")
+    parser.add_argument("-hm", "--http-method", choices=['GET', 'POST'], default='POST', help="HTTP method to use for testing (default: POST)")
 
     args = parser.parse_args()
 
