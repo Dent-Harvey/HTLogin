@@ -391,7 +391,7 @@ def main():
                 print(target_header)
                 output += f"{target_header}\n"
                 result = capture_output(find_and_test_login, url, custom_credentials, args.rate_limit, 
-                                      verbose_mode, language_keywords, args.proxy, args.metodo_http)
+                                      verbose_mode, language_keywords, args.proxy, args.http_method)
                 print(result)
                 output += result + "\n"
         except FileNotFoundError:
@@ -405,7 +405,7 @@ def main():
         print(target_header)
         output += f"{target_header}\n"
         result = capture_output(find_and_test_login, args.url, custom_credentials, args.rate_limit,
-                              verbose_mode, language_keywords, args.proxy, args.metodo_http)
+                              verbose_mode, language_keywords, args.proxy, args.http_method)
         print(result)
         output += result + "\n"
 
