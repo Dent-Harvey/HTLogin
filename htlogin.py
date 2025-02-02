@@ -46,7 +46,7 @@ def print_banner():
     ██   ██    ██    ██      ██    ██ ██       ██ ████   ██ 
     ███████    ██    ██      ██    ██ ██   ███ ██ ██ ██  ██ 
     ██   ██    ██    ██      ██    ██ ██    ██ ██ ██  ██ ██ 
-    ██   ██    ██    ███████  ██████   ██████  ██ ██   ████   v0.1 github.com/akinerkisa/HTLogin
+    ██   ██    ██    ███████  ██████   ██████  ██ ██   ████   v0.2 github.com/akinerkisa/HTLogin
     """
     print(banner)
 
