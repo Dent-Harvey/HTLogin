@@ -101,7 +101,7 @@ def check_login_success(response, original_url, original_content_length, success
 
     return False
 
-def test_default_credentials(session, url, username_input, password_input, csrf_input, action, credentials_list, verbose, success_keywords, failure_keywords):
+def test_default_credentials(session, url, username_input, password_input, csrf_input, action, credentials_list, verbose, success_keywords, failure_keywords, http_method):
     if verbose:
         print("\nTesting Default Credentials:")
     rate_limited_at = None
@@ -123,7 +123,11 @@ def test_default_credentials(session, url, username_input, password_input, csrf_
             payload_data[csrf_input['name']] = csrf_input['value']
 
         try:
-            response = session.post(action, data=payload_data, allow_redirects=False)
+            if http_method == "POST":
+                response = session.post(action, data=payload_data, allow_redirects=False)
+            else:
+                response = session.get(action, params=payload_data, allow_redirects=False)
+
             if response.status_code in [403, 429] and rate_limited_at is None:
                 if verbose:
                     print(f"Rate limit detected during default credential test. Status code: {response.status_code}")
@@ -151,10 +155,12 @@ def test_default_credentials(session, url, username_input, password_input, csrf_
         print("No default credentials were successful.")
     return False, rate_limited_at
 
-def test_rate_limit(url, num_requests, verbose):
+def test_rate_limit(url, num_requests, verbose, proxy=None):
     if verbose:
         print(f"\nTesting Rate Limit with {num_requests} requests:")
     session = requests.Session()
+    if proxy:
+        session.proxies = {"http": proxy, "https": proxy}
     rate_limited_at = None
 
     def make_request(i):
@@ -181,9 +187,11 @@ def test_rate_limit(url, num_requests, verbose):
 
     return rate_limited_at
 
-def find_and_test_login(url, custom_credentials, rate_limit_requests, verbose, language_keywords):
+def find_and_test_login(url, custom_credentials, rate_limit_requests, verbose, language_keywords, proxy=None, http_method="POST"):
     try:
         session = requests.Session()
+        if proxy:
+            session.proxies = {"http": proxy, "https": proxy}
         response = session.get(url)
         response.raise_for_status()
 
@@ -250,9 +258,15 @@ def find_and_test_login(url, custom_credentials, rate_limit_requests, verbose, l
                 try:
                     if injection_type == "NoSQL Injection":
                         headers = {'Content-Type': 'application/json'}
-                        response = session.post(action, data=json.dumps(payload_data), headers=headers, allow_redirects=False)
+                        if http_method == "POST":
+                            response = session.post(action, data=json.dumps(payload_data), headers=headers, allow_redirects=False)
+                        else:
+                            response = session.get(action, params=payload_data, headers=headers, allow_redirects=False)
                     else:
-                        response = session.post(action, data=payload_data, allow_redirects=False)
+                        if http_method == "POST":
+                            response = session.post(action, data=payload_data, allow_redirects=False)
+                        else:
+                            response = session.get(action, params=payload_data, allow_redirects=False)
 
                     if response.status_code in [403, 429] and rate_limited_at is None:
                         if verbose:
@@ -285,7 +299,8 @@ def find_and_test_login(url, custom_credentials, rate_limit_requests, verbose, l
 
         credentials_list = custom_credentials if custom_credentials else DEFAULT_CREDENTIALS
         default_cred_success, default_cred_rate_limit = test_default_credentials(
-            session, url, username_input, password_input, csrf_input, action, credentials_list, verbose, success_keywords, failure_keywords
+            session, url, username_input, password_input, csrf_input, action, 
+            credentials_list, verbose, success_keywords, failure_keywords, http_method
         )
 
         if default_cred_success:
@@ -295,7 +310,7 @@ def find_and_test_login(url, custom_credentials, rate_limit_requests, verbose, l
         if default_cred_rate_limit:
             results["Default Credentials"] += f" (Rate limited at attempt {default_cred_rate_limit})"
 
-        rate_limit_result = test_rate_limit(url, rate_limit_requests, verbose)
+        rate_limit_result = test_rate_limit(url, rate_limit_requests, verbose, proxy)
         if rate_limit_result:
             results["Rate Limit Test"] = f"Rate limited at request {rate_limit_result}"
         else:
@@ -328,6 +343,9 @@ def main():
     parser.add_argument("-v", "--verbose", choices=['on', 'off'], default='off', help="Enable/disable verbose output (on/off)")
     parser.add_argument("-lang", "--language", default='en', help="Language code for keyword detection (default: en)")
     parser.add_argument("-o", "--output", nargs='?', const='output.txt', help="Save output to file")
+    parser.add_argument("--proxy", help="Proxy to use for requests (e.g., http://127.0.0.1:8080)")
+    parser.add_argument("--metodo-http", choices=['GET', 'POST'], default='POST', 
+                      help="Método HTTP a utilizar para las pruebas (default: POST)")
 
     args = parser.parse_args()
 
@@ -373,7 +391,8 @@ def main():
                 target_header = f"\nTarget {i}/{len(urls)}: {url}"
                 print(target_header)
                 output += f"{target_header}\n"
-                result = capture_output(find_and_test_login, url, custom_credentials, args.rate_limit, verbose_mode, language_keywords)
+                result = capture_output(find_and_test_login, url, custom_credentials, args.rate_limit, 
+                                      verbose_mode, language_keywords, args.proxy, args.metodo_http)
                 print(result)
                 output += result + "\n"
         except FileNotFoundError:
@@ -386,7 +405,8 @@ def main():
         target_header = f"Target: {args.url}"
         print(target_header)
         output += f"{target_header}\n"
-        result = capture_output(find_and_test_login, args.url, custom_credentials, args.rate_limit, verbose_mode, language_keywords)
+        result = capture_output(find_and_test_login, args.url, custom_credentials, args.rate_limit,
+                              verbose_mode, language_keywords, args.proxy, args.metodo_http)
         print(result)
         output += result + "\n"
 
