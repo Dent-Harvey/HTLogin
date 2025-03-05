@@ -21,6 +21,8 @@ Flag | Short | Description | Example | Default | Required
 --verbose | -v | Toggles showing all Valid/Invalid results | python3 htlogin.py -v on/off | off | No |
 --language | -lang | Language code for keyword detection | python3 htlogin.py -lang tr | en | No |
 --output | -o | Specify output file | python3 htlogin.py -o output.txt | output.txt | No |
+--proxy | -p | Proxy to use for requests | python3 htlogin.py -p 127.0.0.1 | N/A | No |
+--http-method | -hm | HTTP method to use for testing | python3 htlogin.py -hm GET | POST | No |
 
 ## List File Example Format
 ```
@@ -38,6 +40,8 @@ http://127.0.0.1:5000/lp/rate-limit-login
 <li> Rate limit testing
 <li> Multi-lang support for keyword check
 <li> Url list support
+<li> Proxy support for requests
+<li> HTTP method selection (GET or POST)
   
 ## How HTLogin Extracts Successful Login Attempts
 
